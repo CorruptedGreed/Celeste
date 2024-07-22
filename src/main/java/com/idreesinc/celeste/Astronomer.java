@@ -2,12 +2,11 @@ package com.idreesinc.celeste;
 
 import com.idreesinc.celeste.config.CelesteConfig;
 import org.bukkit.World;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.List;
 import java.util.Random;
 
-public class Astronomer extends BukkitRunnable {
+public class Astronomer {
 
     private final Celeste celeste;
 
@@ -16,7 +15,7 @@ public class Astronomer extends BukkitRunnable {
     }
 
     public void run() {
-        if (celeste.getServer().getOnlinePlayers().size() == 0) {
+        if (celeste.getServer().getOnlinePlayers().isEmpty()) {
             return;
         }
         List<World> worlds = celeste.getServer().getWorlds();
@@ -27,7 +26,7 @@ public class Astronomer extends BukkitRunnable {
                 // Ensure that Celeste only runs on normal worlds unless override is specified in config
                 continue;
             }
-            if (world.getPlayers().size() == 0) {
+            if (world.getPlayers().isEmpty()) {
                 continue;
             }
             if (!(world.getTime() >= config.beginSpawningStarsTime && world.getTime() <= config.endSpawningStarsTime)) {

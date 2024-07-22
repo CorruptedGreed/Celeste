@@ -4,6 +4,7 @@ import com.idreesinc.celeste.Celeste;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.jetbrains.annotations.NotNull;
 
 public class CommandCeleste implements CommandExecutor {
 
@@ -13,7 +14,7 @@ public class CommandCeleste implements CommandExecutor {
         this.celeste = celeste;
     }
 
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {
             if (sender.hasPermission("celeste.reload")) {
                 celeste.reload();

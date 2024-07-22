@@ -7,6 +7,9 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Objects;
 
 public class CommandFallingStar implements CommandExecutor {
 
@@ -16,13 +19,13 @@ public class CommandFallingStar implements CommandExecutor {
         this.celeste = celeste;
     }
 
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (args.length > 0) {
             if (Bukkit.getPlayer(args[0]) == null) {
-                sender.sendMessage("\u00a7cError: Player not found.");
+                sender.sendMessage("§cError: Player not found.");
                 return true;
             }
-            CelestialSphere.createFallingStar(celeste, Bukkit.getPlayer(args[0]), false);
+            CelestialSphere.createFallingStar(celeste, Objects.requireNonNull(Bukkit.getPlayer(args[0])), false);
         } else {
             if (sender instanceof Player) {
                 Player player = (Player) sender;

@@ -1,36 +1,40 @@
 package com.idreesinc.celeste;
 
 import com.idreesinc.celeste.config.CelesteConfig;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Particle;
-import org.bukkit.Sound;
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
+import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ExperienceOrb;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Random;
 
-public class FallingStar extends BukkitRunnable {
+public class FallingStar {
 
     private final Celeste celeste;
     private final Location location;
-    private final Location dropLoc;
+    private Location dropLoc;
     private final CelesteConfig config;
     private double y = 256;
     private boolean soundPlayed = false;
     private boolean lootDropped = false;
     private int sparkTimer;
+    private ScheduledTask task;
+
+    public void setTask(ScheduledTask task) {
+        this.task = task;
+    }
 
     public FallingStar(Celeste celeste, Location location) {
         this.celeste = celeste;
         this.location = location;
         config = celeste.configManager.getConfigForWorld(location.getWorld().getName());
         sparkTimer = config.fallingStarsSparkTime;
-        dropLoc = new Location(location.getWorld(), location.getX(),
-                location.getWorld().getHighestBlockAt(location).getY() + 1, location.getZ());
+
+        // Schedule the synchronous task to get the highest block at the location
+        Bukkit.getRegionScheduler().run(this.celeste, location, scheduledTask -> dropLoc = new Location(location.getWorld(), location.getX(),
+                location.getWorld().getHighestBlockAt(location).getY() + 1, location.getZ()));
     }
 
     public void run() {
@@ -56,7 +60,7 @@ public class FallingStar extends BukkitRunnable {
         if (y <= dropLoc.getY()) {
             if (!lootDropped) {
                 // Note that both simple loot and loot tables will drop if both are configured because why not
-                if (config.fallingStarSimpleLoot != null && config.fallingStarSimpleLoot.entries.size() > 0) {
+                if (config.fallingStarSimpleLoot != null && !config.fallingStarSimpleLoot.entries.isEmpty()) {
                     ItemStack drop = new ItemStack(Material.valueOf(config.fallingStarSimpleLoot.getRandom()), 1);
                     location.getWorld().dropItem(dropLoc, drop);
                     if (celeste.getConfig().getBoolean("debug")) {
@@ -93,8 +97,8 @@ public class FallingStar extends BukkitRunnable {
                         1, null, true);
             }
             sparkTimer--;
-            if (sparkTimer <= 0) {
-                this.cancel();
+            if (sparkTimer <= 0 && task != null) {
+                task.cancel();
             }
         }
         y -= step;

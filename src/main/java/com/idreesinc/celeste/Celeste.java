@@ -1,14 +1,18 @@
 package com.idreesinc.celeste;
 
+import com.idreesinc.celeste.utilities.Metrics;
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import com.idreesinc.celeste.commands.CommandCeleste;
 import com.idreesinc.celeste.commands.CommandFallingStar;
 import com.idreesinc.celeste.commands.CommandShootingStar;
-import com.idreesinc.celeste.utilities.Metrics;
 import com.idreesinc.celeste.utilities.UpdateChecker;
 import com.idreesinc.celeste.config.CelesteConfigManager;
+
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 public class Celeste extends JavaPlugin {
 
@@ -25,8 +29,8 @@ public class Celeste extends JavaPlugin {
         this.getCommand("fallingstar").setExecutor(new CommandFallingStar(this));
         configManager.processConfigs();
 
-        BukkitRunnable stargazingTask = new Astronomer(this);
-        stargazingTask.runTaskTimer(this, 0, 10);
+        Consumer<ScheduledTask> stargazingTask = task -> new Astronomer(this).run();
+        Bukkit.getAsyncScheduler().runAtFixedRate(this, stargazingTask, 0, 10 * 50, TimeUnit.MILLISECONDS);
 
         checkForUpdates();
     }

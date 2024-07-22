@@ -1,15 +1,17 @@
 package com.idreesinc.celeste;
 
 import com.idreesinc.celeste.config.CelesteConfig;
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.Random;
+import java.util.function.Consumer;
 
 public class CelestialSphere {
 
@@ -66,7 +68,7 @@ public class CelestialSphere {
     }
 
     public static void createFallingStar(Celeste celeste, final Location location, boolean approximate) {
-        Location target = location;
+        Location target;
         CelesteConfig config = celeste.configManager.getConfigForWorld(location.getWorld().getName());
         if (approximate) {
             double fallingStarRadius = config.fallingStarsRadius;
@@ -75,13 +77,23 @@ public class CelestialSphere {
             double x = w * Math.cos(t);
             double z = w * Math.sin(t);
             target = new Location(location.getWorld(), location.getX() + x, location.getY(), location.getZ() + z);
+        } else {
+            target = location;
         }
-        BukkitRunnable fallingStarTask = new FallingStar(celeste, target);
-        fallingStarTask.runTaskTimer(celeste, 0, 1);
+
+        FallingStar fallingStar = new FallingStar(celeste, target);
+        Consumer<ScheduledTask> fallingStarTask = task -> {
+            fallingStar.setTask(task);
+            fallingStar.run();
+        };
+
+        Bukkit.getRegionScheduler().runAtFixedRate(celeste, target, fallingStarTask, 1, 1); // Runs every 1 tick
+
         if (celeste.getConfig().getBoolean("debug")) {
             celeste.getLogger().info("Falling star at " + stringifyLocation(target) + " in world " + target.getWorld().getName());
         }
     }
+
 
     private static String stringifyLocation(Location location) {
         DecimalFormat format = new DecimalFormat("##.00");
